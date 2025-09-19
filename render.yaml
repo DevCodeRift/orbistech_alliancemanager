@@ -13,10 +13,8 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - fromDatabase:
-          name: pnw-alliance-db
-          property: connectionString
-        key: DATABASE_URL
+      - key: DATABASE_URL
+        sync: false  # Will be set manually to Supabase URL
       - fromService:
           type: redis
           name: pnw-alliance-redis
@@ -35,13 +33,8 @@ services:
         source: /*
         destination: /index.html
 
+# Only Redis needed on Render - PostgreSQL is on Supabase
 databases:
-  - name: pnw-alliance-db
-    databaseName: pnw_alliance_manager
-    user: postgres
-    plan: starter
-    region: oregon
-
   - name: pnw-alliance-redis
     plan: starter
     region: oregon

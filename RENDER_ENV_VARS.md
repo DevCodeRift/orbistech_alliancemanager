@@ -1,8 +1,14 @@
-# Required Environment Variables for Render Deployment
+# Required Environment Variables for Supabase + Render Deployment
 
 ## Backend Web Service Environment Variables
 
 Add these in your Render dashboard under "Environment Variables":
+
+### Database (Supabase)
+```
+DATABASE_URL=postgresql://postgres.xxxxxxxxxxxx:[password]@aws-0-us-west-1.pooler.supabase.com:5432/postgres
+```
+**Note**: Get this from your Supabase project settings → Database → Connection string
 
 ### Required Discord OAuth Variables
 ```

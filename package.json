@@ -1,52 +1,39 @@
 {
   "name": "pnw-alliance-manager",
   "version": "1.0.0",
-  "description": "Politics and War Alliance Manager - A comprehensive alliance management system",
-  "private": true,
+  "description": "Politics and War Alliance Manager - Vercel + Supabase",
   "scripts": {
-    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
-    "build": "npm run build:backend && npm run build:frontend",
-    "build:backend": "cd backend && npm run build",
-    "build:frontend": "cd frontend && npm run build",
-    "test": "npm run test:backend && npm run test:frontend",
-    "test:backend": "cd backend && npm test",
-    "test:frontend": "cd frontend && npm test",
-    "lint": "npm run lint:backend && npm run lint:frontend",
-    "lint:backend": "cd backend && npm run lint",
-    "lint:frontend": "cd frontend && npm run lint",
-    "docker:dev": "docker-compose up --build",
-    "docker:prod": "docker-compose --profile production up --build",
-    "docker:down": "docker-compose down",
-    "db:setup": "cd backend && npm run db:migrate && npm run db:seed",
-    "db:reset": "cd backend && npx prisma migrate reset",
-    "clean": "rm -rf backend/dist backend/node_modules frontend/dist frontend/node_modules node_modules"
+    "dev": "vercel dev",
+    "build": "npm run db:generate && cd frontend && npm run build",
+    "start": "vercel dev",
+    "deploy": "vercel --prod",
+    "db:migrate": "npx prisma migrate deploy",
+    "db:generate": "npx prisma generate",
+    "db:push": "npx prisma db push",
+    "db:seed": "npx tsx prisma/seed.ts",
+    "postinstall": "npx prisma generate"
   },
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
-  "keywords": [
-    "politics-and-war",
-    "alliance-manager",
-    "discord-oauth",
-    "react",
-    "node.js",
-    "graphql"
-  ],
-  "author": "OrbixTech",
-  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^5.4.2",
+    "@supabase/supabase-js": "^2.38.0",
+    "axios": "^1.5.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "joi": "^17.10.2",
+    "uuid": "^9.0.1",
+    "next": "^14.0.1"
+  },
   "devDependencies": {
-    "concurrently": "^8.2.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/orbixtech/pnw-alliance-manager.git"
+    "@types/node": "^20.6.3",
+    "@types/bcryptjs": "^2.4.4",
+    "@types/jsonwebtoken": "^9.0.3",
+    "@types/uuid": "^9.0.4",
+    "prisma": "^5.4.2",
+    "typescript": "^5.2.2",
+    "vercel": "^32.4.1",
+    "tsx": "^3.12.10"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=18.0.0"
   }
 }
