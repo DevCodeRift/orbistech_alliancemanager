@@ -1,0 +1,307 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User accounts linked to Discord
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Discord information
+  discordId       String  @unique
+  discordUsername String
+  discordAvatar   String?
+  discordTag      String? // username#discriminator format
+
+  // Politics and War information
+  pnwApiKey    String? // Encrypted
+  pnwNationId  Int?    @unique
+  pnwNationName String?
+
+  // User status
+  isActive    Boolean @default(true)
+  lastLogin   DateTime?
+  emailVerified Boolean @default(false)
+
+  // User preferences
+  timezone    String?
+  language    String @default("en")
+  preferences Json?  // JSON object for user preferences
+
+  // Relations
+  allianceManagers AllianceManager[]
+  systemAdmin      SystemAdmin?
+  apiUsageLogs     ApiUsageLog[]
+  assignedManagers AllianceManager[] @relation("AssignedBy")
+  sessions         UserSession[]
+  auditLogs        AuditLog[]
+
+  @@map("users")
+}
+
+// Alliance information from Politics and War
+model Alliance {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Politics and War alliance data
+  pnwAllianceId Int    @unique
+  allianceName  String
+  acronym       String?
+  color         String?
+
+  // Routing and display
+  routeSlug     String  @unique // URL-friendly name for routing
+  displayName   String? // Optional custom display name
+  description   String?
+  logoUrl       String?
+
+  // Alliance settings
+  isActive      Boolean @default(true)
+  isPublic      Boolean @default(false) // Whether alliance data is publicly visible
+
+  // Alliance statistics (cached from API)
+  memberCount   Int?
+  totalScore    Float?
+  averageScore  Float?
+  rank          Int?
+
+  // API configuration
+  rateLimitOverride Int? // Custom rate limit for this alliance
+
+  // Relations
+  managers      AllianceManager[]
+  apiUsageLogs  ApiUsageLog[]
+  auditLogs     AuditLog[]
+
+  @@map("alliances")
+}
+
+// Junction table for alliance managers
+model AllianceManager {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign keys
+  userId      String
+  allianceId  String
+  assignedBy  String? // User ID who assigned this manager
+
+  // Manager-specific API key (encrypted)
+  managerApiKey String?
+
+  // Permissions (JSON object)
+  permissions Json @default("{}")
+
+  // Manager status
+  isActive    Boolean @default(true)
+  assignedAt  DateTime @default(now())
+  revokedAt   DateTime?
+
+  // Manager role/title
+  title       String?
+  role        String @default("manager") // manager, admin, viewer
+
+  // Relations
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alliance   Alliance @relation(fields: [allianceId], references: [id], onDelete: Cascade)
+  assignedByUser User? @relation("AssignedBy", fields: [assignedBy], references: [id])
+
+  @@unique([userId, allianceId])
+  @@map("alliance_managers")
+}
+
+// System administrators
+model SystemAdmin {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign key
+  userId String @unique
+
+  // Admin permissions (JSON object)
+  permissions Json @default("{}")
+
+  // Admin level
+  level       String @default("admin") // admin, super_admin
+
+  // Status
+  isActive    Boolean @default(true)
+  grantedAt   DateTime @default(now())
+  grantedBy   String? // User ID who granted admin access
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("system_admins")
+}
+
+// API usage logging for monitoring and rate limiting
+model ApiUsageLog {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  // Request details
+  userId      String?
+  allianceId  String?
+  endpoint    String
+  method      String
+  queryHash   String? // Hash of GraphQL query for deduplication
+
+  // Response details
+  statusCode     Int
+  responseTimeMs Int
+  cacheHit       Boolean @default(false)
+
+  // Request metadata
+  userAgent   String?
+  ipAddress   String?
+
+  // Error details (if any)
+  errorMessage String?
+  errorCode    String?
+
+  // Relations
+  user     User?     @relation(fields: [userId], references: [id])
+  alliance Alliance? @relation(fields: [allianceId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([allianceId, createdAt])
+  @@index([endpoint, createdAt])
+  @@map("api_usage_logs")
+}
+
+// User sessions for JWT token management
+model UserSession {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Session details
+  userId       String
+  sessionToken String   @unique
+  expiresAt    DateTime
+
+  // Session metadata
+  userAgent    String?
+  ipAddress    String?
+  isActive     Boolean @default(true)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("user_sessions")
+}
+
+// Audit log for security and compliance
+model AuditLog {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  // Event details
+  userId      String?
+  allianceId  String?
+  action      String  // login, api_key_added, manager_assigned, etc.
+  resource    String? // What was affected
+  resourceId  String? // ID of affected resource
+
+  // Event data
+  oldValues   Json?   // Previous values (for updates)
+  newValues   Json?   // New values
+  metadata    Json?   // Additional context
+
+  // Request context
+  ipAddress   String?
+  userAgent   String?
+
+  // Relations
+  user     User?     @relation(fields: [userId], references: [id])
+  alliance Alliance? @relation(fields: [allianceId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@index([allianceId, createdAt])
+  @@map("audit_logs")
+}
+
+// Configuration settings for the application
+model AppConfig {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Config key-value
+  key         String @unique
+  value       String
+  description String?
+
+  // Config metadata
+  category    String? // grouping configs
+  isPublic    Boolean @default(false) // whether config is visible to non-admins
+  dataType    String @default("string") // string, number, boolean, json
+
+  @@map("app_config")
+}
+
+// Rate limiting data
+model RateLimit {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Rate limit identifier
+  identifier  String  // userId, allianceId, or IP address
+  type        String  // user, alliance, ip
+
+  // Rate limit data
+  requests    Int     @default(0)
+  windowStart DateTime
+  windowEnd   DateTime
+
+  // Rate limit configuration
+  maxRequests Int
+  windowMs    Int
+
+  @@unique([identifier, type, windowStart])
+  @@index([windowEnd])
+  @@map("rate_limits")
+}
+
+// Cached Politics and War data
+model PnwDataCache {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Cache key
+  cacheKey    String   @unique
+
+  // Cached data
+  data        Json
+
+  // Cache metadata
+  expiresAt   DateTime
+  tags        String[] // For cache invalidation
+
+  // Cache statistics
+  hitCount    Int @default(0)
+  lastAccess  DateTime @default(now())
+
+  @@index([expiresAt])
+  @@index([tags])
+  @@map("pnw_data_cache")
+}
