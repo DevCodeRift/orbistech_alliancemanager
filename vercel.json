@@ -1,23 +1,13 @@
 {
-  "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "frontend/dist",
-  "installCommand": "npm install",
-  "framework": null,
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/frontend/dist/$1"
-    }
-  ],
   "functions": {
     "pages/api/**/*.ts": {
-      "runtime": "nodejs18.x",
-      "maxDuration": 30
+      "runtime": "@vercel/node"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/((?!api).*)",
+      "destination": "/frontend/dist/$1"
+    }
+  ]
 }
