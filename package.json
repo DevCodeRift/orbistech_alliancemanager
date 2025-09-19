@@ -4,7 +4,7 @@
   "description": "Politics and War Alliance Manager - Vercel + Supabase",
   "scripts": {
     "dev": "vercel dev",
-    "build": "npm run db:generate && cd frontend && npm run build",
+    "build": "npx prisma generate && cd frontend && npm install && npm run build",
     "start": "vercel dev",
     "deploy": "vercel --prod",
     "db:migrate": "npx prisma migrate deploy",
