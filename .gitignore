@@ -126,3 +126,4 @@ dump.rdb
 
 # Prisma
 prisma/dev.db*
+.vercel

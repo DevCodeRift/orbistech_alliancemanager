@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npm run deploy:*)",
+      "Bash(npm install:*)",
+      "Bash(npx vercel:*)",
+      "Bash(npm run build:*)",
+      "WebFetch(domain:orbistech-alliancemanager-b9sgij2po-codedevrifts-projects.vercel.app)",
+      "Bash(rm:*)",
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": []

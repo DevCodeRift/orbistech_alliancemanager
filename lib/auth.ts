@@ -1,39 +1,38 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import jwt from 'jsonwebtoken';
-import { prisma } from './prisma';
+import jwt from 'jsonwebtoken'
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from './prisma'
 
 export interface AuthenticatedUser {
-  id: string;
-  discordId: string;
-  discordUsername: string;
-  pnwNationId?: number | null;
-  pnwNationName?: string | null;
-  isSystemAdmin: boolean;
-  systemAdminLevel?: string;
-  systemAdminPermissions?: any;
-  allianceManagers: {
-    id: string;
-    allianceId: string;
-    allianceName: string;
-    allianceSlug: string;
-    role: string;
-    permissions: any;
-    isActive: boolean;
-  }[];
-  sessionId: string;
+  id: string
+  discordId: string
+  discordUsername: string
+  pnwNationId?: number
+  pnwNationName?: string
+  isSystemAdmin: boolean
+  systemAdminLevel?: string
+  systemAdminPermissions?: any
+  allianceManagers: Array<{
+    id: string
+    allianceId: string
+    allianceName: string
+    allianceSlug: string
+    role: string
+    permissions: any
+    isActive: boolean
+  }>
+  sessionId: string
 }
 
-export async function authenticateUser(req: NextApiRequest): Promise<AuthenticatedUser | null> {
+export async function authenticateUser(request: NextRequest): Promise<AuthenticatedUser | null> {
   try {
-    const authHeader = req.headers.authorization;
+    const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return null;
+      return null
     }
 
-    const token = authHeader.substring(7);
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const token = authHeader.substring(7)
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as any
 
-    // Find user with relationships
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
       include: {
@@ -44,13 +43,12 @@ export async function authenticateUser(req: NextApiRequest): Promise<Authenticat
           },
         },
       },
-    });
+    })
 
     if (!user || !user.isActive) {
-      return null;
+      return null
     }
 
-    // Check session validity
     const session = await prisma.userSession.findFirst({
       where: {
         userId: user.id,
@@ -60,18 +58,18 @@ export async function authenticateUser(req: NextApiRequest): Promise<Authenticat
           gt: new Date(),
         },
       },
-    });
+    })
 
     if (!session) {
-      return null;
+      return null
     }
 
     return {
       id: user.id,
       discordId: user.discordId,
       discordUsername: user.discordUsername,
-      pnwNationId: user.pnwNationId,
-      pnwNationName: user.pnwNationName,
+      pnwNationId: user.pnwNationId || undefined,
+      pnwNationName: user.pnwNationName || undefined,
       isSystemAdmin: !!user.systemAdmin,
       systemAdminLevel: user.systemAdmin?.level,
       systemAdminPermissions: user.systemAdmin?.permissions,
@@ -85,30 +83,37 @@ export async function authenticateUser(req: NextApiRequest): Promise<Authenticat
         isActive: manager.isActive,
       })),
       sessionId: payload.sessionId,
-    };
+    }
   } catch (error) {
-    console.error('Authentication error:', error);
-    return null;
+    console.error('Authentication error:', error)
+    return null
   }
 }
 
-export function requireAuth(handler: (req: NextApiRequest, res: NextApiResponse, user: AuthenticatedUser) => Promise<void>) {
-  return async (req: NextApiRequest, res: NextApiResponse) => {
-    const user = await authenticateUser(req);
+export function requireAuth<T extends any[]>(
+  handler: (request: NextRequest, ...args: [...T, AuthenticatedUser]) => Promise<NextResponse>
+) {
+  return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
+    const user = await authenticateUser(request)
 
     if (!user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    return handler(req, res, user);
-  };
+    return handler(request, ...args, user)
+  }
 }
 
-export function requireSystemAdmin(handler: (req: NextApiRequest, res: NextApiResponse, user: AuthenticatedUser) => Promise<void>) {
-  return requireAuth(async (req, res, user) => {
+export function requireSystemAdmin<T extends any[]>(
+  handler: (request: NextRequest, ...args: [...T, AuthenticatedUser]) => Promise<NextResponse>
+) {
+  return requireAuth(async (request: NextRequest, ...args: [...T, AuthenticatedUser]): Promise<NextResponse> => {
+    const user = args[args.length - 1] as AuthenticatedUser
+
     if (!user.isSystemAdmin) {
-      return res.status(403).json({ error: 'System admin privileges required' });
+      return NextResponse.json({ error: 'System admin privileges required' }, { status: 403 })
     }
-    return handler(req, res, user);
-  });
+
+    return handler(request, ...args)
+  })
 }

@@ -1,14 +1,15 @@
-# Politics and War Alliance Manager
+# Politics and War Alliance Manager - Vercel + Supabase
 
-A comprehensive web-based alliance management system for the Politics and War browser game, featuring Discord authentication, API key management, and alliance-specific dashboards.
+A comprehensive web-based alliance management system for the Politics and War browser game, now fully optimized for Vercel + Supabase deployment.
 
-## 🚀 **Now Powered by Vercel + Supabase!**
+## 🚀 **Fully Rebuilt for Vercel + Supabase**
 
-- ✅ **$0/month hosting cost**
-- ✅ **Automatic scaling**
-- ✅ **Global CDN performance**
-- ✅ **Free custom domains**
-- ✅ **Serverless architecture**
+- ✅ **Next.js 14 with App Router** - Modern React framework
+- ✅ **Vercel API Routes** - Serverless backend functions
+- ✅ **Supabase PostgreSQL** - Managed database with existing schema
+- ✅ **$0/month hosting cost** - Free tier deployment
+- ✅ **Automatic scaling** - Serverless architecture
+- ✅ **Global CDN performance** - Edge deployment
 
 ## Features
 
@@ -22,11 +23,10 @@ A comprehensive web-based alliance management system for the Politics and War br
 ## Tech Stack
 
 ### Frontend
-- **React 18** with **TypeScript**
-- **Vite** for build tooling
+- **Next.js 14** with **App Router**
+- **TypeScript** for type safety
 - **Material-UI** for components
 - **Zustand** for state management
-- **React Router** for routing
 
 ### Backend
 - **Vercel API Routes** (serverless functions)
@@ -56,19 +56,34 @@ npm i -g vercel
 # Deploy
 vercel
 
-# Add environment variables in Vercel dashboard
+# Environment variables will be prompted during deployment
 ```
 
 ### 3. Complete Setup
 ```bash
-# Push database schema
+# Push database schema to Supabase
 npm run db:push
 
-# Seed initial data
+# Seed initial data (optional)
 npm run db:seed
 ```
 
-**Full deployment guide: [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)**
+## Environment Variables
+
+Set these in Vercel dashboard or during deployment:
+
+```env
+DATABASE_URL=postgresql://postgres:[password]@db.[project].supabase.co:5432/postgres
+JWT_SECRET=your-super-secret-jwt-key
+DISCORD_CLIENT_ID=your-discord-client-id
+DISCORD_CLIENT_SECRET=your-discord-client-secret
+DISCORD_REDIRECT_URI=https://your-app.vercel.app/api/auth/discord/callback
+ADMIN_DISCORD_IDS=discord-id-1,discord-id-2
+ENCRYPTION_KEY=your-32-character-encryption-key
+NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+NEXT_PUBLIC_SUPABASE_URL=https://[project].supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[anon_key]
+```
 
 ## Development
 
@@ -86,25 +101,37 @@ npm run dev
 # Open http://localhost:3000
 ```
 
-### Environment Variables
-```env
-DATABASE_URL=postgresql://postgres.xxxx:[password]@supabase.com:5432/postgres
-JWT_SECRET=your-jwt-secret
-DISCORD_CLIENT_ID=your-discord-client-id
-DISCORD_CLIENT_SECRET=your-discord-client-secret
-ENCRYPTION_KEY=your-32-char-encryption-key
-```
-
 ### Database Operations
 ```bash
 # Generate Prisma client
 npm run db:generate
 
-# Push schema changes
+# Push schema changes to Supabase
 npm run db:push
 
 # Seed database
 npm run db:seed
+```
+
+## Project Structure
+
+```
+├── app/                    # Next.js 14 App Router
+│   ├── api/               # API routes (serverless functions)
+│   │   └── auth/         # Authentication endpoints
+│   ├── dashboard/        # Dashboard page
+│   ├── login/           # Login page
+│   └── auth/            # Auth success page
+├── components/          # React components
+├── lib/                # Utilities and configurations
+│   ├── stores/         # Zustand stores
+│   ├── supabase/       # Supabase client
+│   ├── auth.ts         # Authentication utilities
+│   ├── prisma.ts       # Database client
+│   └── theme.ts        # Material-UI theme
+├── prisma/             # Database schema and migrations
+├── vercel.json         # Vercel deployment config
+└── next.config.js      # Next.js configuration
 ```
 
 ## API Routes
@@ -113,30 +140,45 @@ npm run db:seed
 - `GET /api/auth/discord` - Discord OAuth login
 - `GET /api/auth/discord/callback` - OAuth callback
 - `GET /api/auth/me` - Current user info
-- `POST /api/auth/logout` - User logout
 
-### API Key Management
-- `POST /api/api-keys/link` - Link PnW API key
-- `GET /api/api-keys/status` - Get API key status
-- `DELETE /api/api-keys/personal` - Remove personal key
+### Database Schema
 
-### Alliances
-- `GET /api/alliances` - List alliances
-- `GET /api/alliances/:slug` - Alliance details
+The application uses a comprehensive Prisma schema with:
+- **Users** - Discord profiles with encrypted API keys
+- **Alliances** - Game alliance data with routing slugs
+- **Alliance Managers** - Permission-based access control
+- **Audit Logs** - Security and compliance tracking
+- **User Sessions** - JWT session management
+- **Rate Limits** - API usage tracking
 
-### Administration
-- `GET /api/admin/users` - User management (admin only)
-- `GET /api/admin/system-stats` - System statistics
+## Deployment Steps Completed
 
-## Alliance Routing
+1. ✅ **Analyzed existing architecture** - Complex Express + React hybrid
+2. ✅ **Planned new architecture** - Next.js 14 + Vercel + Supabase
+3. ✅ **Cleaned up old files** - Removed Express backend and Vite frontend
+4. ✅ **Set up Next.js 14** - App Router with TypeScript
+5. ✅ **Configured Supabase** - Database integration with existing schema
+6. ✅ **Rebuilt API routes** - Converted to Vercel serverless functions
+7. ✅ **Migrated frontend** - React components to Next.js App Router
+8. ✅ **Set up deployment** - Vercel configuration and environment variables
 
-The application supports dynamic alliance-specific routes:
+## Cost Comparison
 
-- `/alliance/:allianceName/dashboard` - Alliance overview
-- `/alliance/:allianceName/members` - Member management
-- `/alliance/:allianceName/banking` - Bank operations
-- `/alliance/:allianceName/wars` - War tracking
-- `/alliance/:allianceName/trade` - Trade analysis
+| Platform | Monthly Cost |
+|----------|-------------|
+| **Vercel + Supabase** | **$0** ✅ |
+| Previous Render Setup | $18.50 |
+| DigitalOcean | $21.00 |
+| AWS | $25-50 |
+
+## Next Steps
+
+1. **Deploy to Vercel** - `vercel --prod`
+2. **Set up Supabase database** - Create project and get connection string
+3. **Configure environment variables** - Add all required env vars in Vercel
+4. **Push database schema** - `npm run db:push`
+5. **Test authentication flow** - Login with Discord
+6. **Configure custom domain** - Optional, free with Vercel
 
 ## Security Features
 
@@ -146,57 +188,6 @@ The application supports dynamic alliance-specific routes:
 - **JWT Sessions**: Secure token-based authentication
 - **CORS Protection**: Proper cross-origin resource sharing configuration
 
-## Architecture
-
-```
-Frontend (React/Vite) → Vercel API Routes → Supabase PostgreSQL
-                            ↓
-                     Politics & War GraphQL API
-```
-
-### Serverless Functions
-- Each API route runs as an independent serverless function
-- Automatic scaling based on demand
-- Global edge deployment for low latency
-
-### Database Design
-- **Users**: Discord profiles with encrypted API keys
-- **Alliances**: Game alliance data with routing slugs
-- **Alliance Managers**: Permission-based access control
-- **Audit Logs**: Security and compliance tracking
-
-## Cost Comparison
-
-| Platform | Monthly Cost |
-|----------|-------------|
-| **Vercel + Supabase** | **$0** ✅ |
-| Render | $18.50 |
-| DigitalOcean | $21.00 |
-| AWS | $25-50 |
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
-
-## Security Policy
-
-This tool is designed to assist with alliance management and does not automate gameplay. All actions require human confirmation as per Politics and War's automation policy.
-
-## Support
-
-- **GitHub Issues**: Bug reports and feature requests
-- **Documentation**: Complete setup guides in `/docs`
-- **Discord**: Community support server
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ---
 
-**Built with ❤️ for the Politics and War community**
+**✨ Fully rebuilt and optimized for Vercel + Supabase deployment**

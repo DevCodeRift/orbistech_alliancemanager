@@ -3,35 +3,52 @@
   "version": "1.0.0",
   "description": "Politics and War Alliance Manager - Vercel + Supabase",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "npx prisma generate && cd frontend && npm install && npm run build",
-    "start": "vercel dev",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "deploy": "vercel --prod",
     "db:migrate": "npx prisma migrate deploy",
     "db:generate": "npx prisma generate",
     "db:push": "npx prisma db push",
     "db:seed": "npx tsx prisma/seed.ts",
-    "postinstall": "npx prisma generate"
+    "postinstall": "npx prisma generate",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@prisma/client": "^5.4.2",
     "@supabase/supabase-js": "^2.38.0",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.9",
+    "@mui/material": "^5.14.10",
+    "@mui/x-data-grid": "^6.16.1",
+    "@mui/x-date-pickers": "^6.16.1",
     "axios": "^1.5.0",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
+    "date-fns": "^2.30.0",
     "joi": "^17.10.2",
+    "jsonwebtoken": "^9.0.2",
+    "next": "^14.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.46.1",
+    "recharts": "^2.8.0",
     "uuid": "^9.0.1",
-    "next": "^14.0.1"
+    "zustand": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^20.6.3",
     "@types/bcryptjs": "^2.4.4",
     "@types/jsonwebtoken": "^9.0.3",
+    "@types/node": "^20.6.3",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.3.7",
     "@types/uuid": "^9.0.4",
+    "eslint": "^8.45.0",
+    "eslint-config-next": "^14.0.1",
     "prisma": "^5.4.2",
-    "typescript": "^5.2.2",
-    "vercel": "^32.4.1",
-    "tsx": "^3.12.10"
+    "tsx": "^3.12.10",
+    "typescript": "^5.2.2"
   },
   "engines": {
     "node": ">=18.0.0"
